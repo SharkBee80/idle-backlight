@@ -1,18 +1,15 @@
-#!/usr/bin/env python3
-
-import os
-import time
+# import os
 import select
 import subprocess
+import time
 
 from evdev import InputDevice, ecodes, list_devices
-
 
 # =========================
 # Configuration
 # =========================
 
-IDLE_SECONDS = 5  # 5 minutes
+IDLE_SECONDS = 300  # 5 minutes
 SCAN_INTERVAL = 3.0  # scan input devices every 3 seconds
 
 
@@ -134,10 +131,7 @@ def is_touchpad(caps):
         ecodes.ABS_MT_POSITION_Y,
     }
 
-    if abs_codes & touchpad_axes:
-        return True
-
-    return False
+    return bool(abs_codes & touchpad_axes)
 
 
 def is_input_device(device):
@@ -151,7 +145,7 @@ def is_input_device(device):
 
         return is_keyboard(caps) or is_mouse(caps) or is_touchpad(caps)
 
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
@@ -195,12 +189,12 @@ class InputManager:
 
         try:
             self.poller.unregister(device.fd)
-        except Exception:
+        except Exception:  # noqa: BLE001 S110
             pass
 
         try:
             device.close()
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
         print(f"Removed input device: {path}", flush=True)
@@ -307,6 +301,7 @@ def main():
 
                 if saved_brightness is not None:
                     set_brightness(saved_brightness)
+                    print(f"Brightness 0 -> {saved_brightness} ", flush=True)
 
                 screen_off = False
                 saved_brightness = None
@@ -336,7 +331,7 @@ def main():
 
                         screen_off = True
 
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     print(f"Brightness error: {e}", flush=True)
 
         time.sleep(0.05)
