@@ -1,6 +1,7 @@
 # import os
 import select
 import subprocess
+import sys
 import time
 
 from evdev import InputDevice, ecodes, list_devices
@@ -11,6 +12,7 @@ from evdev import InputDevice, ecodes, list_devices
 
 IDLE_SECONDS = 300  # 5 minutes
 SCAN_INTERVAL = 3.0  # scan input devices every 3 seconds
+CHECK_TARGET_INTERVAL = 5.0  # check service.target every 5 secondS
 
 
 # =========================
@@ -256,6 +258,35 @@ class InputManager:
 
 
 # =========================
+# target
+# =========================
+
+
+def is_active(target: str) -> bool:
+    return (
+        subprocess.run(
+            ["systemctl", "is-active", "--quiet", target],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    )
+
+
+def get_target():
+    if is_active("graphical.target"):
+        # print("graphical.target")
+        return 2
+    elif is_active("multi-user.target"):
+        # print("multi-user.target")
+        return 1
+    else:
+        print("unknown / systemd not running")
+        return 0
+
+
+# =========================
 # Main
 # =========================
 
@@ -276,10 +307,20 @@ def main():
     screen_off = False
     saved_brightness = None
 
+    target = get_target()
+    next_target = time.monotonic() + CHECK_TARGET_INTERVAL
+
     next_scan = time.monotonic() + SCAN_INTERVAL
 
     while True:
         now = time.monotonic()
+
+        if target == 1:
+            pass
+        else:
+            if now >= next_target:
+                target = get_target()
+            continue
 
         # -------------------------
         # Detect hot-plug devices
@@ -340,6 +381,5 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-
     except KeyboardInterrupt:
-        pass
+        sys.exit(0)

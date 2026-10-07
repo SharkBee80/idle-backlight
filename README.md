@@ -4,12 +4,30 @@ a script to automatically lower the backlight when the user is inactive
 
 ## how
 
-1. copy the script to `/usr/local/bin/idle-backlight.py`
+1. [release](/releases) or [dist](/dist) or **`build from source`**
 
-2. create a systemd file
+```bash
+pip install -r requirements.txt
+pip install pyinstaller
+```
+
+```bash
+pyinstaller --onefile --name=idle-backlight main.py
+# pyinstaller idle-backlight.spec
+```
+
+2. copy the application to `/usr/local/bin/idle-backlight`
+
+```bash
+sudo cp dist/idle-backlight /usr/local/bin/idle-backlight
+```
+
+3. create a systemd file
 
 ```bash
 sudo nano /etc/systemd/system/idle-backlight.service
+# or
+# sudo nano /usr/lib/systemd/system/idle-backlight.service
 ```
 
 ```ini
@@ -21,10 +39,10 @@ Wants=systemd-udev-settle.service
 [Service]
 Type=simple
 
-ExecStart=/usr/local/bin/idle-backlight.py
+ExecStart=/usr/local/bin/idle-backlight
 
 Restart=always
-RestartSec=2
+RestartSec=3
 
 # This service needs access to /dev/input/event*
 User=root
@@ -37,4 +55,14 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 sudo systemctl enable idle-backlight.service
 sudo systemctl start idle-backlight.service
+```
+
+## uninstall
+
+```bash
+sudo systemctl stop idle-backlight.service
+sudo systemctl disable idle-backlight.service
+sudo systemctl daemon-reload
+sudo rm /usr/local/bin/idle-backlight
+sudo rm /etc/systemd/system/idle-backlight.service
 ```
