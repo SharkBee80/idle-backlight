@@ -10,7 +10,7 @@ from evdev import InputDevice, ecodes, list_devices
 # Configuration
 # =========================
 
-IDLE_SECONDS = 300  # 5 minutes
+IDLE_SECONDS = 180  # 3 minutes
 SCAN_INTERVAL = 3.0  # scan input devices every 3 seconds
 CHECK_TARGET_INTERVAL = 5.0  # check service.target every 5 secondS
 
@@ -31,7 +31,7 @@ def get_brightness():
     return int(result.stdout.strip())
 
 
-def set_brightness(value):
+def set_brightness(value: int):
     """
     Set raw brightness value.
     """
@@ -41,6 +41,34 @@ def set_brightness(value):
         stderr=subprocess.DEVNULL,
         check=False,
     )
+
+
+def is_screen_off():
+    return get_brightness() == 0
+
+
+def set_screen_off() -> bool:
+    i = 0
+    while i < 3:
+        set_brightness(0)
+        if not is_screen_off():
+            i += 1
+        else:
+            return True
+    return False
+
+
+def reset_screen_on(value: int | None) -> bool:
+    i = 0
+    if not value:
+        value = 100
+    while i < 3:
+        set_brightness(value)
+        if get_brightness() != value:
+            i += 1
+        else:
+            return True
+    return False
 
 
 # =========================
@@ -318,6 +346,7 @@ def main():
         if target == 1:
             pass
         else:
+            screen_off = is_screen_off()
             if now >= next_target:
                 target = get_target()
             continue
@@ -340,12 +369,11 @@ def main():
             if screen_off:
                 print("User input detected, restoring brightness.", flush=True)
 
-                if saved_brightness is not None:
-                    set_brightness(saved_brightness)
+                if ok := reset_screen_on(saved_brightness):
                     print(f"Brightness 0 -> {saved_brightness} ", flush=True)
-
-                screen_off = False
-                saved_brightness = None
+                    screen_off = is_screen_off()
+                else:
+                    print("Failed to restore brightness.", flush=True)
 
         # -------------------------
         # Check idle time
@@ -368,9 +396,7 @@ def main():
                             flush=True,
                         )
 
-                        set_brightness(0)
-
-                        screen_off = True
+                        screen_off = set_screen_off() and is_screen_off()
 
                 except Exception as e:  # noqa: BLE001
                     print(f"Brightness error: {e}", flush=True)
