@@ -1,10 +1,10 @@
 ## what
 
-a script to automatically lower the backlight when the user is inactive
+a script to automatically lower the backlight when the user is `inactive` in `multi-user.target` but not in graphical.target
 
 ## how
 
-1. [release](/releases) or [dist](/dist) or **`build from source`**
+1. [release](../../releases) or [dist](/dist) or **`build from source`**
 
 ```bash
 pip install -r requirements.txt
@@ -66,3 +66,7 @@ sudo systemctl daemon-reload
 sudo rm /usr/local/bin/idle-backlight
 sudo rm /etc/systemd/system/idle-backlight.service
 ```
+
+## todo
+
+- [ ] add a way to set the config
