@@ -31,7 +31,7 @@ def get_brightness():
     return int(result.stdout.strip())
 
 
-def set_brightness(value: int):
+def set_brightness(value: int | str):
     """
     Set raw brightness value.
     """
@@ -54,6 +54,9 @@ def max_brightness():
     return int(result.stdout.strip())
 
 
+MAX_BRIGHTNESS = max_brightness()  # or "100%"
+
+
 def is_screen_off():
     return get_brightness() == 0
 
@@ -62,9 +65,9 @@ def set_screen_off() -> bool:
     i = 0
     while i < 3:
         set_brightness(0)
+        time.sleep(0.5)
         if not is_screen_off():
             i += 1
-            time.sleep(0.1)
         else:
             return True
     return False
@@ -72,13 +75,12 @@ def set_screen_off() -> bool:
 
 def reset_screen_on(value: int | None) -> bool:
     i = 0
-    if not value:
-        value = max_brightness()
+    v = value or MAX_BRIGHTNESS
     while i < 3:
-        set_brightness(value)
-        if get_brightness() != value:
+        set_brightness(v)
+        time.sleep(0.5)
+        if get_brightness() != v:
             i += 1
-            time.sleep(0.1)
         else:
             return True
     return False
