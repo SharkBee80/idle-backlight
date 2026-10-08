@@ -2,6 +2,16 @@
 
 a script to automatically lower the backlight when the user is `inactive` in `multi-user.target` but not in graphical.target
 
+### platform
+
+- Linux
+
+### _dev environment_
+
+- Python 3.13.5
+- Linux 6.12.111+deb13-amd64
+- Systemd
+
 ## how
 
 1. [release](../../releases) or [dist](/dist) or **`build from source`**
@@ -67,6 +77,18 @@ sudo rm /usr/local/bin/idle-backlight
 sudo rm /etc/systemd/system/idle-backlight.service
 ```
 
+## update
+
+```bash
+sudo systemctl stop idle-backlight.service
+sudo cp dist/idle-backlight /usr/local/bin/idle-backlight
+sudo systemctl start idle-backlight.service
+```
+
 ## todo
 
 - [ ] add a way to set the config
+
+## license
+
+[MIT](LICENSE)

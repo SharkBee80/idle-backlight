@@ -384,9 +384,7 @@ def main():
 
             if idle_time >= IDLE_SECONDS:
                 try:
-                    current = get_brightness()
-
-                    if current > 0:
+                    if current := get_brightness() > 0:
                         saved_brightness = current
 
                         print(
@@ -397,6 +395,8 @@ def main():
                         )
 
                         screen_off = set_screen_off() and is_screen_off()
+                    else:
+                        screen_off = False
 
                 except Exception as e:  # noqa: BLE001
                     print(f"Brightness error: {e}", flush=True)
