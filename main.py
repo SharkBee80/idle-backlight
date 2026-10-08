@@ -388,7 +388,6 @@ def main():
 
                 if reset_screen_on(saved_brightness):
                     print(f"Brightness 0 -> {saved_brightness} ", flush=True)
-                    screen_off = is_screen_off()
                 else:
                     print("Failed to restore brightness.", flush=True)
 
@@ -413,13 +412,15 @@ def main():
 
                         screen_off = set_screen_off() and is_screen_off()
                     else:
-                        screen_off = False
+                        screen_off = True
 
                     if screen_off:
                         print("Screen is off.", flush=True)
 
                 except Exception as e:  # noqa: BLE001
                     print(f"Brightness error: {e}", flush=True)
+        # else:
+        #     screen_off = is_screen_off()
 
         time.sleep(0.05)
 

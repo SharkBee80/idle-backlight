@@ -8,9 +8,10 @@ a script to automatically lower the backlight when the user is `inactive` in `mu
 
 ### _dev environment_
 
-- Python 3.13.5
+- python 3.13.5
 - Linux 6.12.111+deb13-amd64
-- Systemd
+- systemd 257 (257.13-1~deb13u1)
+- brightnessctl 0.5
 
 ## how
 
