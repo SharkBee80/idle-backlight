@@ -56,6 +56,7 @@ RestartSec=3
 
 # This service needs access to /dev/input/event*
 User=root
+Group=root
 
 [Install]
 WantedBy=multi-user.target

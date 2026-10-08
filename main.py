@@ -43,6 +43,17 @@ def set_brightness(value: int):
     )
 
 
+def max_brightness():
+    """
+    Get maximum raw brightness value.
+    """
+    result = subprocess.run(
+        ["brightnessctl", "max"], capture_output=True, text=True, check=True
+    )
+
+    return int(result.stdout.strip())
+
+
 def is_screen_off():
     return get_brightness() == 0
 
@@ -53,6 +64,7 @@ def set_screen_off() -> bool:
         set_brightness(0)
         if not is_screen_off():
             i += 1
+            time.sleep(0.1)
         else:
             return True
     return False
@@ -61,11 +73,12 @@ def set_screen_off() -> bool:
 def reset_screen_on(value: int | None) -> bool:
     i = 0
     if not value:
-        value = 100
+        value = max_brightness()
     while i < 3:
         set_brightness(value)
         if get_brightness() != value:
             i += 1
+            time.sleep(0.1)
         else:
             return True
     return False
@@ -189,7 +202,7 @@ class InputManager:
         self.devices = {}
         self.poller = select.poll()
 
-    def add_device(self, path):
+    def add_device(self, path: str):
         if path in self.devices:
             return
 
@@ -343,6 +356,10 @@ def main():
     while True:
         now = time.monotonic()
 
+        # -------------------------
+        # Check current target
+        # -------------------------
+
         if target == 1:
             pass
         else:
@@ -369,7 +386,7 @@ def main():
             if screen_off:
                 print("User input detected, restoring brightness.", flush=True)
 
-                if ok := reset_screen_on(saved_brightness):
+                if reset_screen_on(saved_brightness):
                     print(f"Brightness 0 -> {saved_brightness} ", flush=True)
                     screen_off = is_screen_off()
                 else:
@@ -397,6 +414,9 @@ def main():
                         screen_off = set_screen_off() and is_screen_off()
                     else:
                         screen_off = False
+
+                    if screen_off:
+                        print("Screen is off.", flush=True)
 
                 except Exception as e:  # noqa: BLE001
                     print(f"Brightness error: {e}", flush=True)
