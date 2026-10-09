@@ -36,10 +36,7 @@ pyinstaller --onefile --name=idle-backlight main.py
 echo "pyinstaller done"
 
 echo "copying to /usr/local/bin"
-systemctl stop idle-backlight.service
-cp dist/idle-backlight /usr/local/bin/idle-backlight
-systemctl start idle-backlight.service
-echo "done"
+systemctl stop idle-backlight.service && cp dist/idle-backlight /usr/local/bin/idle-backlight && systemctl start idle-backlight.service && echo "done"
 
 # 修复了 read 命令的语法问题
 read -rp "按 Enter 键退出..."

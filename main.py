@@ -10,9 +10,10 @@ from evdev import InputDevice, ecodes, list_devices
 # Configuration
 # =========================
 
-IDLE_SECONDS = 180  # 3 minutes
+IDLE_SECONDS = 60  # 3 minutes
 SCAN_INTERVAL = 3.0  # scan input devices every 3 seconds
 CHECK_TARGET_INTERVAL = 5.0  # check service.target every 5 secondS
+IGNORE_TARGETS = False
 
 
 # =========================
@@ -55,6 +56,7 @@ def max_brightness():
 
 
 MAX_BRIGHTNESS = max_brightness()  # or "100%"
+print(f"Max brightness: {MAX_BRIGHTNESS}")
 
 
 def is_screen_off():
@@ -66,10 +68,10 @@ def set_screen_off() -> bool:
     while i < 3:
         set_brightness(0)
         time.sleep(0.5)
-        if not is_screen_off():
-            i += 1
-        else:
+        if is_screen_off():
             return True
+        else:
+            i += 1
     return False
 
 
@@ -79,10 +81,10 @@ def reset_screen_on(value: int | None) -> bool:
     while i < 3:
         set_brightness(v)
         time.sleep(0.5)
-        if get_brightness() != v:
-            i += 1
-        else:
+        if get_brightness() > 0:
             return True
+        else:
+            i += 1
     return False
 
 
@@ -320,13 +322,13 @@ def is_active(target: str) -> bool:
 def get_target():
     if is_active("graphical.target"):
         # print("graphical.target")
-        return 2
+        return 2, "graphical.target"
     elif is_active("multi-user.target"):
         # print("multi-user.target")
-        return 1
+        return 1, "multi-user.target"
     else:
         print("unknown / systemd not running")
-        return 0
+        return 0, "unknown"
 
 
 # =========================
@@ -351,6 +353,7 @@ def main():
     saved_brightness = None
 
     target = get_target()
+    print(f"Target: {target[1]}", flush=True)
     next_target = time.monotonic() + CHECK_TARGET_INTERVAL
 
     next_scan = time.monotonic() + SCAN_INTERVAL
@@ -362,12 +365,14 @@ def main():
         # Check current target
         # -------------------------
 
-        if target == 1:
+        if target[0] == 1 or IGNORE_TARGETS:
             pass
         else:
             screen_off = is_screen_off()
             if now >= next_target:
                 target = get_target()
+                next_target = now + CHECK_TARGET_INTERVAL
+                print(f"Target: {target}", flush=True)
             continue
 
         # -------------------------
@@ -390,6 +395,7 @@ def main():
 
                 if reset_screen_on(saved_brightness):
                     print(f"Brightness 0 -> {saved_brightness} ", flush=True)
+                    screen_off = False
                 else:
                     print("Failed to restore brightness.", flush=True)
 
@@ -402,7 +408,7 @@ def main():
 
             if idle_time >= IDLE_SECONDS:
                 try:
-                    if current := get_brightness() > 0:
+                    if (current := get_brightness()) > 0:
                         saved_brightness = current
 
                         print(
