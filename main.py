@@ -368,12 +368,12 @@ def main():
         if target[0] == 1 or IGNORE_TARGETS:
             pass
         else:
-            screen_off = is_screen_off()
-            if now >= next_target:
-                target = get_target()
-                next_target = now + CHECK_TARGET_INTERVAL
-                print(f"Target: {target}", flush=True)
             continue
+
+        if now >= next_target:
+            target = get_target()
+            next_target = now + CHECK_TARGET_INTERVAL
+            print(f"Target: {target}", flush=True)
 
         # -------------------------
         # Detect hot-plug devices
@@ -427,8 +427,8 @@ def main():
 
                 except Exception as e:  # noqa: BLE001
                     print(f"Brightness error: {e}", flush=True)
-        # else:
-        #     screen_off = is_screen_off()
+        else:
+            screen_off = is_screen_off()
 
         time.sleep(0.05)
 
