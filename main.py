@@ -365,15 +365,15 @@ def main():
         # Check current target
         # -------------------------
 
-        if target[0] == 1 or IGNORE_TARGETS:
-            pass
-        else:
-            continue
-
         if now >= next_target:
             target = get_target()
             next_target = now + CHECK_TARGET_INTERVAL
             print(f"Target: {target}", flush=True)
+
+        if target[0] == 1 or IGNORE_TARGETS:
+            pass
+        else:
+            continue
 
         # -------------------------
         # Detect hot-plug devices
